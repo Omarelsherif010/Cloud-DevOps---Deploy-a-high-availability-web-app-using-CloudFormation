@@ -90,3 +90,26 @@ Resources:
       VpcId: 
         Fn::ImportValue:
           Fn::Sub: "${EnvironmentName}-VPCID"
+
+  WebServerAutoScalingGroup:
+    Type: AWS::AutoScaling::AutoScalingGroup
+    Properties:
+      VPCZoneIdentifier:
+      - Fn::ImportValue: 
+          !Sub "${EnvironmentName}-PRIVATE-NETS"
+      LaunchConfigurationName:
+        Ref: WebServerAutoScalingLaunchConfig
+      MinSize: '4'
+      MaxSize: '8'
+      TargetGroupARNs:
+      - Ref: WebServerTargetGroup
+
+  WebServerApplicationLoadBalancer:
+    Type: AWS::ElasticLoadBalancingV2::LoadBalancer
+    Properties:
+      Subnets:
+      - Fn::ImportValue: !Sub "${EnvironmentName}-PUBLIC1-SN"
+      - Fn::ImportValue: !Sub "${EnvironmentName}-PUBLIC2-SN"
+      SecurityGroups:
+      - Ref: LoadBalancerSecGroup
+
