@@ -1,0 +1,11 @@
+Description: >
+
+    This template deploys an Application Load Balancer, a Listener, Security Group rules, and an AutoScaling 
+    Group of t3.medium EC2 instances with a minimum of 4 instances and a maximum of 8 instances, 
+    along with associated Launch Configurations that download the Web Application code from an S3 Bucket.
+
+Parameters:
+
+    EnvironmentName:
+        Description: The environment name that will be prefixed to resource names
+        Type: String
