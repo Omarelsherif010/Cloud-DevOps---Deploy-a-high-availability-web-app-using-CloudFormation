@@ -46,3 +46,32 @@ Resources:
         FromPort: 0
         ToPort: 65535
         CidrIp: 0.0.0.0/0
+        
+  S3ReadOnlyEC2InstanceProfile:
+    Type: AWS::IAM::InstanceProfile
+    Properties: 
+      Roles:
+        - S3ReadOnlyEC2InstanceProfile
+
+  WebServerAutoScalingLaunchConfig:
+    Type: AWS::AutoScaling::LaunchConfiguration
+    Properties:
+      UserData:
+        Fn::Base64: !Sub |
+          #!/bin/bash
+          apt-get update -y
+          apt-get install unzip awscli -y
+          apt-get install apache2 -y
+          cd /var/www/html
+          aws s3 cp s3://cdnd-udacity-project2-tamer/udagram_udacity.zip .
+          unzip -o udagram_udacity.zip
+          systemctl start apache2.service
+      ImageId: ami-0ac80df6eff0e70b5  # This ubuntu AMI value will be needed to be changed in the future 
+      IamInstanceProfile: !Ref S3ReadOnlyEC2InstanceProfile  # This EC2 IAM role had to be created first 
+      SecurityGroups:
+      - Ref: WebServerSecGroup
+      InstanceType: t3.medium
+      BlockDeviceMappings:
+      - DeviceName: "/dev/sdk"
+        Ebs:
+          VolumeSize: '10'
