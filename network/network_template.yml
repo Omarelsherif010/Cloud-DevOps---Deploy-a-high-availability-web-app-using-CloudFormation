@@ -21,9 +21,9 @@ Parameters:
         Default: 10.0.0.0/24
 
     PrivateSubnet1CIDR:
-            Description: The IP range for the private subnet in the first Availability Zone
-            Type: String
-            Default: 10.0.1.0/24
+        Description: The IP range for the private subnet in the first Availability Zone
+        Type: String
+        Default: 10.0.1.0/24
 
     PublicSubnet2CIDR:
         Description: The IP range for the public subnet in the second Availability Zone
