@@ -29,6 +29,7 @@ Resources:
         FromPort: 80
         ToPort: 80
         CidrIp: 0.0.0.0/0
+  
   WebServerSecGroup:
     Type: AWS::EC2::SecurityGroup
     Properties:
@@ -47,12 +48,27 @@ Resources:
         ToPort: 65535
         CidrIp: 0.0.0.0/0
         
+  RoleForSSMAccess: 
+    Type: "AWS::IAM::Role"
+    Properties:
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service:
+                - ec2.amazonaws.com
+            Action:
+              - 'sts:AssumeRole'
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/AmazonS3ReadOnlyAccess
+
   S3ReadOnlyEC2InstanceProfile:
     Type: AWS::IAM::InstanceProfile
     Properties: 
       Roles:
-        - S3ReadOnlyEC2InstanceProfile
-
+          - !Ref RoleForSSMAccess
+  
   WebServerAutoScalingLaunchConfig:
     Type: AWS::AutoScaling::LaunchConfiguration
     Properties:
@@ -75,7 +91,7 @@ Resources:
       - DeviceName: "/dev/sdk"
         Ebs:
           VolumeSize: '10'
-
+  
   WebServerTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
     Properties:
@@ -126,17 +142,16 @@ Resources:
       Protocol: HTTP
 
   ApplicationLoadBalancerListenerRule:
-      Type: AWS::ElasticLoadBalancingV2::ListenerRule
-      Properties:
-        Actions:
-        - Type: forward
-          TargetGroupArn: !Ref 'WebServerTargetGroup'
-        Conditions:
-        - Field: path-pattern
-          Values: [/]
-        ListenerArn: !Ref 'Listener'
-        Priority: 1
-
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      Actions:
+      - Type: forward
+        TargetGroupArn: !Ref 'WebServerTargetGroup'
+      Conditions:
+      - Field: path-pattern
+        Values: [/]
+      ListenerArn: !Ref 'Listener'
+      Priority: 1
 
 Outputs:
 
@@ -145,4 +160,3 @@ Outputs:
     Value: !Join ["", ["http://", !GetAtt WebServerApplicationLoadBalancer.DNSName,]]
     Export:
       Name: !Sub ${EnvironmentName}-DNS-NAME
-
